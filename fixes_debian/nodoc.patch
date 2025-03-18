@@ -1,0 +1,17 @@
+diff --color -Naur a/debian/rules b/debian/rules
+--- a/debian/rules	2024-07-06 13:41:07
++++ b/debian/rules	2025-03-18 15:09:29
+@@ -81,13 +81,6 @@
+ 		chrpath -d {} +
+ 	find debian/*/usr/lib/ -name 'libgnutlsxx.*' -delete
+ 
+-override_dh_installinfo:
+-	dh_installinfo $(BDIR)
+-	if test -e debian/gnutls-doc ; then \
+-		cd debian/gnutls-doc/usr/share/info && \
+-		sed -i -e 's:image src="\([^"]*.png"\):image src="/usr/share/doc/gnutls-doc/html/\1:g' *.info* ; \
+-	fi
+-
+ override_dh_compress:
+ 	dh_compress $(BDIR) -X.pdf
+ 

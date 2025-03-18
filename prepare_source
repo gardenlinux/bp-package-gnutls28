@@ -1,1 +1,2 @@
 apt_src gnutls28
+apply_patches fixes_debian
