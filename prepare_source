@@ -1,2 +1,3 @@
 apt_src gnutls28
 apply_patches fixes_debian
+verssion_suffix="gl0"
