@@ -1,28 +1,20 @@
 pkg=gnutls28
-version_orig=3.8.9
+version_orig=3.8.11
 version="${version_orig}-3"
 version_suffix="gl1+bp1592"
-BASE_URL=https://packages.gardenlinux.io
-# 1956.0 snapshot
-# https://github.com/gardenlinux/repo/actions/runs/16819033082/job/47642191348
-snapshot_timestamp=1754597610
 
-apt-get install --no-install-recommends -y curl gzip ca-certificates
-curl -sSL ${BASE_URL}/debian-snapshot/dists/${snapshot_timestamp}/main/source/Sources.gz | gunzip >Sources
+git_src -b "${version}" https://salsa.debian.org/gnutls-team/gnutls.git
+git_src -b "${version_orig}" https://gitlab.com/gnutls/gnutls.git
 
-DIRECTORY=$(grep -A100 "Package: $pkg" Sources | grep Directory | head -1 | cut -d' ' -f2)
-# reverse sort so that "orig" comes first
-FILES=$(grep -A100 "Package: $pkg" Sources | grep Files: -A100 | grep " ${pkg}_" | grep -E '\.(orig|debian)\.' | grep -vE '\.asc$' | cut -d' ' -f4 | sort -ur)
+apply_patches debian_fixes
 
-mkdir -p "$dir/src"
+apt-get install bison gperf gtk-doc wget
 
-for file in ${FILES}; do
-  if echo ${file} | grep '\.orig\.'; then
-    # TODO: check compression format
-    curl -L "${BASE_URL}/${DIRECTORY}/${file}" | xz -d | tee "$dir/orig.tar" | tar xf - --strip-components 1 --directory "$dir/src"
-  elif echo ${file} | grep '\.debian\.'; then
-    curl -L "${BASE_URL}/${DIRECTORY}/${file}" | xz -d | tee "$dir/debian.tar" | tar xf - --directory "$dir/src"
-  fi
-done
+# Bootstrap and repack original (Git) sources as they are modified by the script after checkout by intend and magic
+pushd ${dir}/src
 
-apply_patches fixes_debian
+unlink ${dir}/orig.tar
+./bootstrap --copy
+tar -cf ../orig.tar .
+
+popd
